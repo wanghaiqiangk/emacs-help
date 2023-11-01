@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Automatically build emacs
+# OS: ubuntu 20.04, 22.04
+# Version: emacs-29.1
+
 # utilities
 RED="\033[31m"
 GREEN="\033[32m"
@@ -10,14 +14,15 @@ function info () { echo -e "${GREEN}$*${DEFAULT}"; }
 function warn () { echo -e "${YELLOW}$*${DEFAULT}"; }
 function error () { echo -e "${RED}$*${DEFAULT}"; }
 
+# main
 readonly version="29.1"
 readonly server="https://mirrors.ustc.edu.cn"
 
 # download source tarball
-wget ${server}/gnu/emacs/emacs-${version}.tar.gz
-
-# extract source tarball
-tar xzvf emacs-${version}.tar.gz
+if [[ ! -d emacs-"${version}" ]]; then
+	wget ${server}/gnu/emacs/emacs-"${version}".tar.gz
+	tar xzvf emacs-"${version}".tar.gz
+fi
 
 # Install dependencies
 sudo apt-get -y install build-essential mailutils
@@ -30,16 +35,16 @@ sudo apt-get build-dep emacs || { error "Failed to build-dep emacs"; exit 1; }
 # enhance_option="--with-cairo --with-xwidgets --with-x-toolkit=gtk3"
 
 # build source
-cd emacs-${version} && mkdir -p build && cd build
+cd emacs-"${version}" && mkdir -p build && cd build
 ../configure --with-mailutils || { error "configure failed"; exit 1; }
 make -j$(nproc)
 
 # install binary
-sudo make -j$(nproc) install
+sudo make -j$(nproc) install # prefix=/path/to
 
 # clean
 make clean
 make distclean
 cd ../..
-rm -r emacs-${version}
-rm emacs-${version}.tar.gz
+rm -r emacs-"${version}"
+rm emacs-"${version}".tar.gz
