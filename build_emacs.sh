@@ -25,7 +25,11 @@ if [[ ! -d emacs-"${version}" ]]; then
 fi
 
 # Install dependencies
-sudo apt-get -y install build-essential mailutils
+gcc_major_version=$(gcc --version | head -n1 | awk '{ print $NF }' | cut -d. -f1)
+sudo apt-get -y install \
+	build-essential \
+	mailutils \
+	libgccjit-"${gcc_major_version}"-dev
 sudo apt-get build-dep emacs || { error "Failed to build-dep emacs"; exit 1; }
 
 ## Enhance X11 UI, https://superuser.com/questions/1128721/compiling-emacs-25-1-on-ubuntu-16-04/1129052#1129052
@@ -36,7 +40,7 @@ sudo apt-get build-dep emacs || { error "Failed to build-dep emacs"; exit 1; }
 
 # build source
 cd emacs-"${version}" && mkdir -p build && cd build
-../configure --with-mailutils || { error "configure failed"; exit 1; }
+../configure --with-native-compilation --with-mailutils || { error "configure failed"; exit 1; }
 make -j$(nproc)
 
 # install binary
